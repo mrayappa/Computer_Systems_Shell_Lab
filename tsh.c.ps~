@@ -1,0 +1,3004 @@
+%!PS-Adobe-3.0
+%%Title: tsh.c, lp, tsh.c.ps
+%%For: Hang Zheng
+%%Creator: a2ps version 4.13
+%%CreationDate: Wed Mar 24 16:51:18 2010
+%%BoundingBox: 24 24 588 768
+%%DocumentData: Clean7Bit
+%%Orientation: Landscape
+%%Pages: 8
+%%PageOrder: Ascend
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%Requirements: Tumble Duplex 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Define these in case they're not in the FontInfo (also, here
+    % they're easier to get to.
+    /UnderlinePosition 1 def
+    /UnderlineThickness 1 def
+    
+    % Get the underline position and thickness if they're defined.
+    currentdict /FontInfo known {
+      FontInfo
+      
+      dup /UnderlinePosition known {
+	dup /UnderlinePosition get
+	0 exch FontMatrix transform exch pop
+	/UnderlinePosition exch def
+      } if
+      
+      dup /UnderlineThickness known {
+	/UnderlineThickness get
+	0 exch FontMatrix transform exch pop
+	/UnderlineThickness exch def
+      } if
+      
+    } if
+    currentdict 
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed string
+% Version 1.2 1/31/1990
+% Orignal Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 612 def
+/sw 792 def
+/llx 24 def
+/urx 768 def
+/ury 588 def
+/lly 24 def
+/#copies 1 def
+%% Pagedevice definitions:
+countdictstack
+% Push our own mark, since there can be several PS marks pushed depending
+% where the failure really occured.
+/a2ps_mark
+{
+%%BeginFeature: *Tumble False
+  (<<) cvx exec /Tumble (false) cvx exec (>>) cvx exec setpagedevice
+%%EndFeature
+%%BeginFeature: *Duplex True
+  (<<) cvx exec /Duplex (true) cvx exec (>>) cvx exec setpagedevice
+%%EndFeature
+} stopped
+% My cleartomark
+{ /a2ps_mark eq { exit } if } loop
+countdictstack exch sub dup 0 gt
+{
+  { end } repeat
+}{
+  pop
+} ifelse
+/th 15.000000 def
+/fnfs 11 def
+/bfs 7.493857 def
+/cw 4.496314 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   522.321860 th add
+def
+/pmw urx llx sub pw 2 mul sub 1 div def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+  dup pmw add pw add
+] def
+/y [
+  pmh ph add 0 mul ph add
+  dup
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 4 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1-2) 1
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/* ) c n
+( * tsh - A tiny shell program with job control) N
+( * ) N
+( * Hang Zheng, hangz) N
+( */) N
+(#include) K
+( <stdio.h>) p n
+(#include) K
+( <stdlib.h>) p n
+(#include) K
+( <unistd.h>) p n
+(#include) K
+( <string.h>) p n
+(#include) K
+( <ctype.h>) p n
+(#include) K
+( <signal.h>) p n
+(#include) K
+( <sys/types.h>) p n
+(#include) K
+( <fcntl.h>) p n
+(#include) K
+( <sys/wait.h>) p n
+(#include) K
+( <errno.h>) p n
+() N
+(/* Misc manifest constants */) c n
+(#define) K
+( MAXLINE    1024   ) p
+(/* max line size */) c n
+(#define) K
+( MAXARGS     128   ) p
+(/* max args on a command line */) c n
+(#define) K
+( MAXJOBS      16   ) p
+(/* max jobs at any point in time */) c n
+(#define) K
+( MAXJID    1<<16   ) p
+(/* max job ID */) c n
+() p n
+(/* Job states */) c n
+(#define) K
+( UNDEF         0   ) p
+(/* undefined */) c n
+(#define) K
+( FG            1   ) p
+(/* running in foreground */) c n
+(#define) K
+( BG            2   ) p
+(/* running in background */) c n
+(#define) K
+( ST            3   ) p
+(/* stopped */) c n
+() p n
+(/* ) c n
+( * Jobs states: FG \(foreground\), BG \(background\), ST \(stopped\)) N
+( * Job state transitions and enabling actions:) N
+( *     FG -> ST  : ctrl-z) N
+( *     ST -> FG  : fg command) N
+( *     ST -> BG  : bg command) N
+( *     BG -> FG  : fg command) N
+( * At most 1 job can be in the FG state.) N
+( */) N
+() p n
+(/* Parsing states */) c n
+(#define) K
+( ST_NORMAL   0x0   ) p
+(/* next token is an argument */) c n
+(#define) K
+( ST_INFILE   0x1   ) p
+(/* next token is the input file */) c n
+(#define) K
+( ST_OUTFILE  0x2   ) p
+(/* next token is the output file */) c n
+() p n
+() N
+(/* Global variables */) c n
+(extern) K
+( ) p
+(char) k
+( **environ;      ) p
+(/* defined in libc */) c n
+(char) k
+( prompt[] = ") p
+(tsh> ) str
+(";    ) p
+(/* command line prompt \(DO NOT CHANGE\) */) c n
+(int) k
+( verbose = 0;            ) p
+(/* if true, print additional output */) c n
+(int) k
+( nextjid = 1;            ) p
+(/* next job ID to allocate */) c n
+(char) k
+( sbuf[MAXLINE];         ) p
+(/* for composing sprintf messages */) c n
+() p n
+(struct) k
+( job_t {              ) p
+(/* The job struct */) c n
+(    pid_t pid;              ) p
+(/* job PID */) c n
+(    ) p
+(int) k
+( jid;                ) p
+(/* job ID [1, 2, ...] */) c n
+(    ) p
+(int) k
+( state;              ) p
+(/* UNDEF, BG, FG, or ST */) c n
+(    ) p
+(char) k
+( cmdline[MAXLINE];  ) p
+(/* command line */) c n
+(};) p n
+(struct) k
+( job_t job_list[MAXJOBS]; ) p
+(/* The job list */) c n
+() p n
+(struct) k
+( cmdline_tokens {) p n
+(    ) S
+(int) k
+( argc;               ) p
+(/* Number of arguments */) c n
+(    ) p
+(char) k
+( *argv[MAXARGS];    ) p
+(/* The arguments list */) c n
+(    ) p
+(char) k
+( *infile;           ) p
+(/* The input file */) c n
+(    ) p
+(char) k
+( *outfile;          ) p
+(/* The output file */) c n
+(    ) p
+(enum) k
+( builtins_t {       ) p
+(/* Indicates if argv[0] is a builtin command */) c n
+(        BUILTIN_NONE,) p n
+(        BUILTIN_QUIT,) N
+(        BUILTIN_JOBS,) N
+(        BUILTIN_BG,) N
+(tsh.c) (Page 1/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        BUILTIN_FG} builtins;) p n
+(};) N
+(/* End global variables */) c n
+() p n
+() N
+(/* Function prototypes */) c n
+(void) k
+( eval\() p
+(char) k
+( *cmdline\);) p n
+() N
+(/* Helper functions */) c n
+(int) k
+( builtin_command \() p
+(struct) k
+( cmdline_tokens tok, sigset_t mask2\);) p n
+(void) k
+( change_fd \() p
+(char) k
+(* in, ) p
+(char) k
+(* out\);) p n
+(void) k
+( print_error \(\);) p n
+() N
+(/* Handlers */) c n
+(void) k
+( sigchld_handler\() p
+(int) k
+( sig\);) p n
+(void) k
+( sigtstp_handler\() p
+(int) k
+( sig\);) p n
+(void) k
+( sigint_handler\() p
+(int) k
+( sig\);) p n
+() N
+(/* Here are helper routines that we've provided for you */) c n
+(int) k
+( parseline\() p
+(const) K
+( ) p
+(char) k
+( *cmdline, ) p
+(struct) k
+( cmdline_tokens *tok\); ) p n
+(void) k
+( sigquit_handler\() p
+(int) k
+( sig\);) p n
+() N
+(void) k
+( clearjob\() p
+(struct) k
+( job_t *job\);) p n
+(void) k
+( initjobs\() p
+(struct) k
+( job_t *job_list\);) p n
+(int) k
+( maxjid\() p
+(struct) k
+( job_t *job_list\); ) p n
+(int) k
+( addjob\() p
+(struct) k
+( job_t *job_list, pid_t pid, ) p
+(int) k
+( state, ) p
+(char) k
+( *cmdline\);) p n
+(int) k
+( deletejob\() p
+(struct) k
+( job_t *job_list, pid_t pid\); ) p n
+(pid_t fgpid\() S
+(struct) k
+( job_t *job_list\);) p n
+(struct) k
+( job_t *getjobpid\() p
+(struct) k
+( job_t *job_list, pid_t pid\);) p n
+(struct) k
+( job_t *getjobjid\() p
+(struct) k
+( job_t *job_list, ) p
+(int) k
+( jid\); ) p n
+(int) k
+( pid2jid\(pid_t pid\); ) p n
+(void) k
+( listjobs\() p
+(struct) k
+( job_t *job_list, ) p
+(int) k
+( output_fd\);) p n
+() N
+(void) k
+( usage\() p
+(void) k
+(\);) p n
+(void) k
+( unix_error\() p
+(char) k
+( *msg\);) p n
+(void) k
+( app_error\() p
+(char) k
+( *msg\);) p n
+(typedef) K
+( ) p
+(void) k
+( handler_t\() p
+(int) k
+(\);) p n
+(handler_t *Signal\() S
+(int) k
+( signum, handler_t *handler\);) p n
+() N
+() N
+() N
+(/*) c n
+( * main - The shell's main routine ) N
+( */) N
+(int) k
+( ) p n
+(main\() S
+(int) k
+( argc, ) p
+(char) k
+( **argv\) ) p n
+({) N
+(    ) S
+(char) k
+( c;) p n
+(    ) S
+(char) k
+( cmdline[MAXLINE];    ) p
+(/* cmdline for fgets */) c n
+(    ) p
+(int) k
+( emit_prompt = 1; ) p
+(/* emit prompt \(default\) */) c n
+() p n
+(    ) S
+(/* Redirect stderr to stdout \(so that driver will get all output) c n
+(     * on the pipe connected to stdout\) */) N
+(    dup2\(1, 2\);) p n
+() N
+(    ) S
+(/* Parse the command line */) c n
+(    ) p
+(while) K
+( \(\(c = getopt\(argc, argv, ") p
+(hvp) str
+("\)\) != EOF\) {) p n
+(        ) S
+(switch) K
+( \(c\) {) p n
+(        ) S
+(case) K
+( ') p
+(h) str
+(':             ) p
+(/* print help message */) c n
+(            usage\(\);) p n
+(            ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( ') p
+(v) str
+(':             ) p
+(/* emit additional diagnostic info */) c n
+(            verbose = 1;) p n
+(            ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( ') p
+(p) str
+(':             ) p
+(/* don't print a prompt */) c n
+(            emit_prompt = 0;  ) p
+(/* handy for automatic testing */) c n
+(            ) p
+(break) K
+(;) p n
+(        ) S
+(default) K
+(:) p n
+(            usage\(\);) N
+(tsh.c) (Page 2/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (1/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        }) p n
+(    }) N
+() N
+(    ) S
+(/* Install the signal handlers */) c n
+() p n
+(    ) S
+(/* These are the ones you will need to implement */) c n
+(    Signal\(SIGINT,  sigint_handler\);   ) p
+(/* ctrl-c */) c n
+(    Signal\(SIGTSTP, sigtstp_handler\);  ) p
+(/* ctrl-z */) c n
+(    Signal\(SIGCHLD, sigchld_handler\);  ) p
+(/* Terminated or stopped child */) c n
+(    Signal\(SIGTTIN, SIG_IGN\);) p n
+(    Signal\(SIGTTOU, SIG_IGN\);) N
+() N
+(    ) S
+(/* This one provides a clean way to kill the shell */) c n
+(    Signal\(SIGQUIT, sigquit_handler\); ) p n
+() N
+(    ) S
+(/* Initialize the job list */) c n
+(    initjobs\(job_list\);) p n
+() N
+() N
+(    ) S
+(/* Execute the shell's read/eval loop */) c n
+(    ) p
+(while) K
+( \(1\) {) p n
+() N
+(        ) S
+(if) K
+( \(emit_prompt\) {) p n
+(            printf\(") S
+(%s) str
+(", prompt\);) p n
+(            fflush\(stdout\);) N
+(        }) N
+(        ) S
+(if) K
+( \(\(fgets\(cmdline, MAXLINE, stdin\) == ) p
+(NULL) K
+(\) && ferror\(stdin\)\)) p n
+(            app_error\(") S
+(fgets error) str
+("\);) p n
+(        ) S
+(if) K
+( \(feof\(stdin\)\) { ) p n
+(            ) S
+(/* End of file \(ctrl-d\) */) c n
+(            printf \(") p
+(\\n) str
+("\);) p n
+(            fflush\(stdout\);) N
+(            fflush\(stderr\);) N
+(            exit\(0\);) N
+(        }) N
+(        ) N
+(        ) S
+(/* Remove the trailing newline */) c n
+(        cmdline[strlen\(cmdline\)-1] = ') p
+(\\0) str
+(';) p n
+(        ) N
+(        ) S
+(/* Evaluate the command line */) c n
+(        eval\(cmdline\);) p n
+(        ) N
+(        fflush\(stdout\);) N
+(        fflush\(stdout\);) N
+(    } ) N
+(    ) N
+(    exit\(0\); ) S
+(/* control never reaches here */) c n
+(}) p n
+() N
+(/* ) c n
+( * eval - Evaluate the command line that the user has just typed in) N
+( * ) N
+( * If the user has requested a built-in command \(quit, jobs, bg or fg\)) N
+( * then execute it immediately. Otherwise, fork a child process and) N
+( * run the job in the context of the child. If the job is running in) N
+( * the foreground, wait for it to terminate and then return.  Note:) N
+( * each child process must have a unique process group ID so that our) N
+( * background children don't receive SIGINT \(SIGTSTP\) from the kernel) N
+( * when we type ctrl-c \(ctrl-z\) at the keyboard.  ) N
+( */) N
+(void) k
+( ) p n
+(eval\() S
+(char) k
+( *cmdline\) ) p n
+({) N
+(    ) S
+(int) k
+( bg;              ) p
+(/* should the job run in bg or fg? */) c n
+(    ) p n
+(    ) S
+(/* from parseline */) c n
+(    ) p
+(struct) k
+( cmdline_tokens tok;) p n
+() N
+(    sigset_t mask;      ) S
+(/* for signals to be blocked using sigprocmask */) c n
+(tsh.c) (Page 3/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    sigset_t mask2;     ) p
+(/* for signals to be unblocked by sigsuspend */) c n
+() p n
+(    ) S
+(int) k
+( pid;            ) p
+(/* pid for fork return */) c n
+() p n
+() N
+(    ) S
+(/* Parse command line */) c n
+(    bg = parseline\(cmdline, &tok\); ) p n
+() N
+(    ) S
+(if) K
+( \(bg == -1\) ) p
+(return) K
+(;               ) p
+(/* parsing error */) c n
+(    ) p
+(if) K
+( \(tok.argv[0] == ) p
+(NULL) K
+(\)  ) p
+(return) K
+(;   ) p
+(/* ignore empty lines */) c n
+() p n
+(    ) S
+(/* initializing mask for sigsuspend */) c n
+(    sigemptyset\(&mask2\);            ) p n
+() N
+() N
+(    ) S
+(/* if not built-in command */) c n
+(    ) p
+(if) K
+( \(!builtin_command\(tok, mask2\)\){) p n
+(    ) N
+(        ) S
+(/* initializes mask as empty set for sigprocmask */) c n
+(        ) p
+(if) K
+( \(sigemptyset\(&mask\) == -1\){) p n
+(            print_error\(\);            ) N
+(            ) S
+(return) K
+(;) p n
+(        }     ) N
+() N
+(        ) S
+(/* adds SIGCHLD, SIGINT, SIGTSTP to mask set */) c n
+(        ) p
+(if) K
+( \(sigaddset\(&mask, SIGCHLD\) != -1 && sigaddset\(&mask, SIGINT\) != -1 &&) p n
+(                sigaddset\(&mask, SIGTSTP\) != -1\){) N
+(        } ) S
+(else) K
+({) p n
+(            print_error\(\);) N
+(            ) S
+(return) K
+(;) p n
+(        }  ) N
+() N
+(        ) S
+(/* block SIGCHILD, SIGINT, STGTSTP signals in mask set */) c n
+(        ) p
+(if) K
+( \(sigprocmask\(SIG_BLOCK, &mask, ) p
+(NULL) K
+(\) == -1\){) p n
+(            print_error\(\);) N
+(            ) S
+(return) K
+(;) p n
+(        }    ) N
+() N
+(    ) N
+(        ) N
+(        ) S
+(/* Child Process */) c n
+(        ) p
+(///////////////////////////////////////////////////////////////////) c n
+(        ) p
+(/////////////////////////////////////////////////////////////////// ) c n
+(        ) p
+(if) K
+( \(\(pid = fork\(\)\) == 0\){) p n
+(            change_fd \(tok.infile, tok.outfile\);) N
+() N
+(            ) S
+(/* Putting child in new process group */) c n
+(            ) p
+(if) K
+( \(setpgid\(0, 0\) == -1\){) p n
+(                print_error\(\);) N
+(                ) S
+(return) K
+(;) p n
+(            }) N
+() N
+(            ) S
+(/* unblock SIGCHLD, SIGINT, SIGTSTP signals before exec */) c n
+(            ) p
+(if) K
+( \(sigprocmask\(SIG_UNBLOCK, &mask, ) p
+(NULL) K
+(\) == -1\){) p n
+(                print_error\(\);) N
+(                ) S
+(return) K
+(;) p n
+(            }) N
+() N
+() N
+(            ) S
+(/* incorrect command */) c n
+(            ) p
+(if) K
+( \(execve\(tok.argv[0], tok.argv, environ\) < 0\){) p n
+(                printf\(") S
+(%s: Command not found. \\n) str
+(", tok.argv[0]\);) p n
+(                exit\(0\);) N
+(            }) N
+() N
+(        }) N
+(        ) S
+(///////////////////////////////////////////////////////////////////) c n
+(        ) p
+(///////////////////////////////////////////////////////////////////) c n
+() p n
+(tsh.c) (Page 4/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (2/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5-6) 3
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    ) N
+(        ) S
+(/* Parent Process */) c n
+(        ) p
+(///////////////////////////////////////////////////////////////////) c n
+(        ) p
+(/////////////////////////////////////////////////////////////////// ) c n
+(        ) p
+(if) K
+( \(bg\){) p n
+(            ) S
+(if) K
+( \(addjob\(job_list, pid, BG, cmdline\) == 0\){) p n
+(                print_error\(\);) N
+(                ) S
+(return) K
+(;) p n
+(            }) N
+(        } ) S
+(else) K
+({) p n
+(            ) S
+(if) K
+( \(addjob\(job_list, pid, FG, cmdline\) == 0\){) p n
+(                print_error\(\);) N
+(                ) S
+(return) K
+(;) p n
+(            }) N
+(        }) N
+() N
+(        ) N
+(        ) S
+(/* unblock SIGCHLD, SIGINT, SIGTSTP signals */) c n
+(        ) p
+(if) K
+( \(sigprocmask\(SIG_UNBLOCK, &mask, ) p
+(NULL) K
+(\) == -1\){) p n
+(            print_error\(\);) N
+(            ) S
+(return) K
+(;) p n
+(        }) N
+() N
+() N
+(        ) S
+(/* if foreground */) c n
+(        ) p
+(if) K
+( \(!bg\){) p n
+() N
+(            ) S
+(while) K
+( \(fgpid\(job_list\) != 0 && ) p n
+(                    getjobpid\(job_list, pid\)->state != ST\){) N
+(                    ) N
+(                sigsuspend\(&mask2\);) N
+(            }   ) N
+() N
+(        } ) S
+(else) K
+({     ) p
+(/* if background */) c n
+(        ) p n
+(            sprintf\(sbuf, ") S
+([%d] ) str
+(", getjobpid\(job_list, pid\)->jid\);) p n
+(            sprintf\(sbuf, ") S
+(%s\(%d\) ) str
+(", sbuf, pid\);) p n
+(            sprintf\(sbuf, ") S
+(%s%s\\n) str
+(", sbuf, cmdline\);     ) p n
+() N
+(            printf\(sbuf\);) N
+() N
+(        }) N
+(        ) S
+(///////////////////////////////////////////////////////////////////) c n
+(        ) p
+(///////////////////////////////////////////////////////////////////) c n
+(    }) p n
+() N
+(    ) S
+(return) K
+(;) p n
+(}) N
+() N
+() N
+(/* ) c n
+( * print_error - Printing Errors from System function calls) N
+( * ) N
+( * Parameters:) N
+( *   none) N
+( *) N
+( * Returns:) N
+( *   none) N
+( */) N
+(void) k
+( ) p n
+(print_error\(\)) N
+({) N
+(    printf\(") S
+(Error Occurred, returning to prompt\\n) str
+("\);) p n
+(}) N
+() N
+(/* ) c n
+( * bulitin_command - Handling bulitin commands) N
+( * ) N
+(tsh.c) (Page 5/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * Parameters:) c n
+( *   tok:       tok from parser of shell input) N
+( *) N
+( *   mask2:     mask for suspending process) N
+( *) N
+( * Returns:) N
+( *   1:         if built-in command) N
+( *   0:         if no built-in command) N
+( */) N
+(int) k
+( ) p n
+(builtin_command \() S
+(struct) k
+( cmdline_tokens tok, sigset_t mask2\)) p n
+({) N
+(    ) S
+(struct) k
+( job_t* job;) p n
+(   ) N
+(    ) S
+(/* for redirecting output of jobs */) c
+( ) p n
+(    ) S
+(int) k
+( outfd;  ) p n
+(    ) S
+(FILE) k
+(* fout = ) p
+(NULL) K
+(;) p n
+(    ) N
+(    ) S
+(switch) K
+( \(tok.builtins\){) p n
+() N
+(        ) S
+(case) K
+( BUILTIN_NONE:  ) p
+(return) K
+( 0;) p n
+(        ) N
+(        ) S
+(case) K
+( BUILTIN_QUIT:  exit\(0\);) p n
+() N
+(        ) S
+(case) K
+( BUILTIN_JOBS:  ) p
+(if) K
+( \(tok.outfile == ) p
+(NULL) K
+(\){  ) p
+(/* if to be redirected */) c n
+(                                listjobs\(job_list, STDOUT_FILENO\);) p n
+(                            } ) S
+(else) K
+({) p n
+(                                ) S
+(/* if error, open file first */) c n
+(                                ) p
+(if) K
+( \(\(outfd = open\(tok.outfile, O_RDWR\)\) < 0\){) p n
+(                                    ) S
+(/* opening file*/) c n
+(                                    fout = fopen\(tok.outfile, ") p
+(w) str
+("\);) p n
+() N
+(                                    ) S
+(/* get file descriptor again */) c
+(             ) p n
+(                ) N
+(                                    outfd = open\(tok.outfile, O_RDWR\);) N
+(                                }) N
+(                               ) N
+(                                ) S
+(/* list the jobs */) c
+( ) p n
+(                                listjobs\(job_list, outfd\);) N
+(                                ) N
+(                                ) S
+(/* close filestreas, file descriptors */) c n
+(                                close\(outfd\);                                ) p n
+(                                ) N
+(                                ) S
+(if) K
+( \(fout != ) p
+(NULL) K
+(\){) p n
+(                                    fclose\(fout\);                               ) N
+(     ) N
+(                                }) N
+(                            }               ) N
+() N
+(                            ) S
+(return) K
+( 1;) p n
+(    ) N
+(        ) S
+(case) K
+( BUILTIN_BG:    ) p
+(/* if jid specified */) c n
+(                            ) p
+(if) K
+(  \(tok.argv[tok.argc-1][0] == ') p
+(%) str
+('\){) p n
+(                                ) S
+(/* get job pointer using jid */) c n
+(                                job = getjobjid\(job_list,) p n
+(                                    atoi\(tok.argv[tok.argc-1]+1\)\);) N
+() N
+(                                ) S
+(if) K
+( \(job == ) p
+(NULL) K
+(\){) p n
+(                                    printf\(") S
+(%s: No such job\\n) str
+(", tok.argv[1]\);) p n
+(                                    ) S
+(return) K
+( 1;) p n
+(                                }) N
+() N
+(                            } ) S
+(else) K
+({ ) p
+(/* if pid specified */) c n
+(                                ) p
+(/* get job pointer using pid */) c n
+(                                job = getjobpid\(job_list,) p n
+(                                    atoi\(tok.argv[tok.argc-1]\)\);) N
+() N
+(                                ) S
+(if) K
+( \(job == ) p
+(NULL) K
+(\){) p n
+(                                    printf\(") S
+(\(%s\): No such process\\n) str
+(", ) p n
+(tsh.c) (Page 6/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (3/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7-8) 4
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(                                        tok.argv[1]\);) p n
+(                                    ) S
+(return) K
+( 1;) p n
+(                                }) N
+(                            }) N
+() N
+(                            ) S
+(/* if current state doesn't allow bg */) c n
+(                            ) p
+(if) K
+( \(job->state != ST && job->state != BG\){) p n
+(                                printf\(") S
+(Error, current process is not a\\) str n
+(                                        stopped, background job.\\n) S
+("\);) p n
+(                            }) N
+() N
+(                            ) S
+(/* print out job to be bg'd*/) c n
+(                            printf\(") p
+([%d] \(%d\) %s\\n) str
+(", job->jid, job->pid,) p n
+(                                    job->cmdline\);) N
+(                            ) N
+(                            ) S
+(/* change state, send signal */) c n
+(                            job->state = BG;) p n
+(                            kill\(job->pid, SIGCONT\);        ) N
+() N
+(                            ) S
+(return) K
+( 1;) p n
+() N
+(        ) S
+(case) K
+( BUILTIN_FG:    ) p
+(/* if jid specified */) c
+( ) p n
+(                            ) S
+(if) K
+(  \(tok.argv[tok.argc-1][0] == ') p
+(%) str
+('\){) p n
+(                                ) S
+(/* get job pointer using jid */) c n
+(                                job = getjobjid\(job_list,) p n
+(                                    atoi\(tok.argv[tok.argc-1]+1\)\);) N
+(                                ) N
+(                                ) S
+(if) K
+( \(job == ) p
+(NULL) K
+(\){) p n
+(                                    printf\(") S
+(%s: No such job\\n) str
+(", tok.argv[1]\);) p n
+(                                    ) S
+(return) K
+( 1;) p n
+(                                }) N
+() N
+(                            } ) S
+(else) K
+({ ) p
+(/* if pid specified */) c n
+(                                ) p
+(/* get job pointer using pid */) c n
+(                                job = getjobpid\(job_list,) p n
+(                                    atoi\(tok.argv[tok.argc-1]\)\);) N
+(                                ) N
+(                                ) S
+(if) K
+( \(job == ) p
+(NULL) K
+(\){) p n
+(                                    printf\(") S
+(\(%s\): No such process\\n) str
+(", ) p n
+(                                            tok.argv[1]\);) N
+(                                    ) S
+(return) K
+( 1;) p n
+(                                }                            ) N
+() N
+(                            }) N
+() N
+(                            ) S
+(/* if current state doesn't allow fg */) c n
+(                            ) p
+(if) K
+( \(job->state != ST && job->state != BG\){) p n
+(                                printf\(") S
+(Error, current process is not a\\) str n
+(                                        background job.\\n) S
+("\);) p n
+(                            }) N
+() N
+(                            ) S
+(/* wait until current fg finishes/change state */) c n
+(                            ) p
+(while) K
+( \(fgpid\(job_list\) != 0 &&) p n
+(                                      getjobpid\(job_list, job->pid\)->state ) N
+(                                                != ST\){) N
+(                                sigsuspend\(&mask2\);) N
+(                            }) N
+() N
+(                            ) S
+(/* change state, send signal */) c n
+(                            job->state = FG;) p n
+(                            kill\(job->pid, SIGCONT\);) N
+() N
+(                            ) S
+(return) K
+( 1;) p n
+() N
+(        ) S
+(default) K
+(:            ) p
+(return) K
+( 0;) p n
+(    }) N
+(}) N
+() N
+(/* ) c n
+(tsh.c) (Page 7/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * chang_fd - Redirecting file descriptors) c n
+( * ) N
+( * Parameters:) N
+( *   in:       input file redirection) N
+( *) N
+( *   out:      output file redirection) N
+( *) N
+( * Returns:) N
+( *   none) N
+( */) N
+(void) k
+( ) p n
+(change_fd \() S
+(char) k
+(* in, ) p
+(char) k
+(* out\)) p n
+({) N
+(    ) S
+(/* for redirecting input/output of job */) c n
+(    ) p
+(int) k
+( infd;) p n
+(    ) S
+(int) k
+( outfd;  ) p n
+(    ) S
+(FILE) k
+(* fin = ) p
+(NULL) K
+(;) p n
+(    ) S
+(FILE) k
+(* fout = ) p
+(NULL) K
+(;) p n
+() N
+(    ) S
+(if) K
+( \(in != ) p
+(NULL) K
+(\){    ) p
+(/* if input needs redirection */) c n
+(        ) p
+(/* if error, open file first */) c n
+(        ) p
+(if) K
+( \(\(infd = open\(in, O_RDWR\)\) < 0\){) p n
+(            fin = fopen\(in, ") S
+(r) str
+("\);) p n
+(            infd = open\(in, O_RDWR\);) N
+(        }) N
+() N
+(        ) S
+(/* duplicating file descriptor */) c n
+(        dup2\(infd, STDIN_FILENO\);) p n
+() N
+(        close\(infd\);) N
+(        ) S
+(if) K
+( \(fin != ) p
+(NULL) K
+(\)) p n
+(            fclose\(fin\);) N
+(    }) N
+() N
+(    ) S
+(if) K
+( \(out != ) p
+(NULL) K
+(\){   ) p
+(/* if output needs redirection */) c n
+(        ) p
+(/* if error, open file first */) c n
+(        ) p
+(if) K
+( \(\(outfd = open\(out, O_RDWR\)\) < 0\){) p n
+(            fout = fopen\(out, ") S
+(w) str
+("\);) p n
+(            outfd = open\(out, O_RDWR\);) N
+(        }) N
+() N
+(        ) S
+(/* duplicating file descriptor */) c n
+(        dup2\(outfd, STDOUT_FILENO\);) p n
+() N
+(        close\(outfd\);) N
+(        ) S
+(if) K
+( \(fout != ) p
+(NULL) K
+(\)) p n
+(            fclose\(fout\);) N
+(    }) N
+(    ) N
+(    ) S
+(return) K
+(;) p n
+() N
+(}) N
+() N
+(/* ) c n
+( * parseline - Parse the command line and build the argv array.) N
+( * ) N
+( * Parameters:) N
+( *   cmdline:  The command line, in the form:) N
+( *) N
+( *                command [arguments...] [< infile] [> oufile] [&]) N
+( *) N
+( *   tok:      Pointer to a cmdline_tokens structure. The elements of this) N
+( *             structure will be populated with the parsed tokens. Characters ) N
+( *             enclosed in single or double quotes are treated as a single) N
+( *             argument. ) N
+( * Returns:) N
+( *   1:        if the user has requested a BG job) N
+( *   0:        if the user has requested a FG job  ) N
+( *  -1:        if cmdline is incorrectly formatted) N
+(tsh.c) (Page 8/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (4/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (9-10) 5
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+( * ) c n
+( * Note:       The string elements of tok \(e.g., argv[], infile, outfile\) ) N
+( *             are statically allocated inside parseline\(\) and will be ) N
+( *             overwritten the next time this function is invoked.) N
+( */) N
+(int) k
+( ) p n
+(parseline\() S
+(const) K
+( ) p
+(char) k
+( *cmdline, ) p
+(struct) k
+( cmdline_tokens *tok\) ) p n
+({) N
+() N
+(    ) S
+(static) K
+( ) p
+(char) k
+( array[MAXLINE];          ) p
+(/* holds local copy of command line */) c n
+(    ) p
+(const) K
+( ) p
+(char) k
+( delims[10] = ") p
+( \\t\\r\\n) str
+(";   ) p
+(/* argument delimiters \(white-space\) */) c n
+(    ) p
+(char) k
+( *buf = array;                   ) p
+(/* ptr that traverses command line */) c n
+(    ) p
+(char) k
+( *next;                          ) p
+(/* ptr to the end of the current arg */) c n
+(    ) p
+(char) k
+( *endbuf;                        ) p
+(/* ptr to the end of the cmdline string) c n
+( */) N
+(    ) p
+(int) k
+( is_bg;                           ) p
+(/* background job? */) c n
+() p n
+(    ) S
+(int) k
+( parsing_state;                   ) p
+(/* indicates if the next token is the) c n
+(                                            input or output file */) N
+() p n
+(    ) S
+(if) K
+( \(cmdline == ) p
+(NULL) K
+(\) {) p n
+(        \() S
+(void) k
+(\) fprintf\(stderr, ") p
+(Error: command line is NULL\\n) str
+("\);) p n
+(        ) S
+(return) K
+( -1;) p n
+(    }) N
+() N
+(    \() S
+(void) k
+(\) strncpy\(buf, cmdline, MAXLINE\);) p n
+(    endbuf = buf + strlen\(buf\);) N
+() N
+(    tok->infile = ) S
+(NULL) K
+(;) p n
+(    tok->outfile = ) S
+(NULL) K
+(;) p n
+() N
+(    ) S
+(/* Build the argv list */) c n
+(    parsing_state = ST_NORMAL;) p n
+(    tok->argc = 0;) N
+() N
+(    ) S
+(while) K
+( \(buf < endbuf\) {) p n
+(        ) S
+(/* Skip the white-spaces */) c n
+(        buf += strspn \(buf, delims\);) p n
+(        ) S
+(if) K
+( \(buf >= endbuf\) ) p
+(break) K
+(;) p n
+() N
+(        ) S
+(/* Check for I/O redirection specifiers */) c n
+(        ) p
+(if) K
+( \(*buf == ') p
+(<) str
+('\) {) p n
+(            ) S
+(if) K
+( \(tok->infile\) {) p n
+(                \() S
+(void) k
+(\) fprintf\(stderr, ") p
+(Error: Ambiguous I/O redirection\\n) str
+("\);) p n
+(                ) S
+(return) K
+( -1;) p n
+(            }) N
+(            parsing_state |= ST_INFILE;) N
+(            buf++;) N
+(            ) S
+(continue) K
+(;) p n
+(        }) N
+(        ) S
+(if) K
+( \(*buf == ') p
+(>) str
+('\) {) p n
+(            ) S
+(if) K
+( \(tok->outfile\) {) p n
+(                \() S
+(void) k
+(\) fprintf\(stderr, ") p
+(Error: Ambiguous I/O redirection\\n) str
+("\);) p n
+(                ) S
+(return) K
+( -1;) p n
+(            }) N
+(            parsing_state |= ST_OUTFILE;) N
+(            buf ++;) N
+(            ) S
+(continue) K
+(;) p n
+(        }) N
+() N
+(        ) S
+(if) K
+( \(*buf == ') p
+(\\') str
+(' || *buf == ') p
+(\\") str
+('\) {) p n
+(            ) S
+(/* Detect quoted tokens */) c n
+(            buf++;) p n
+(            next = strchr \(buf, *\(buf-1\)\);) N
+(        } ) S
+(else) K
+( {) p n
+(            ) S
+(/* Find next delimiter */) c n
+(            next = buf + strcspn \(buf, delims\);) p n
+(        }) N
+(        ) N
+(tsh.c) (Page 9/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(        ) p
+(if) K
+( \(next == ) p
+(NULL) K
+(\) {) p n
+(            ) S
+(/* Returned by strchr\(\); this means that the closing) c n
+(               quote was not found. */) N
+(            \() p
+(void) k
+(\) fprintf \(stderr, ") p
+(Error: unmatched %c.\\n) str
+(", *\(buf-1\)\);) p n
+(            ) S
+(return) K
+( -1;) p n
+(        }) N
+() N
+(        ) S
+(/* Terminate the token */) c n
+(        *next = ') p
+(\\0) str
+(';) p n
+() N
+(        ) S
+(/* Record the token as either the next argument or the input/output file) c n
+( */) N
+(        ) p
+(switch) K
+( \(parsing_state\) {) p n
+(        ) S
+(case) K
+( ST_NORMAL:) p n
+(            tok->argv[tok->argc++] = buf;) N
+(            ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( ST_INFILE:) p n
+(            tok->infile = buf;) N
+(            ) S
+(break) K
+(;) p n
+(        ) S
+(case) K
+( ST_OUTFILE:) p n
+(            tok->outfile = buf;) N
+(            ) S
+(break) K
+(;) p n
+(        ) S
+(default) K
+(:) p n
+(            \() S
+(void) k
+(\) fprintf\(stderr, ") p
+(Error: Ambiguous I/O redirection\\n) str
+("\);) p n
+(            ) S
+(return) K
+( -1;) p n
+(        }) N
+(        parsing_state = ST_NORMAL;) N
+() N
+(        ) S
+(/* Check if argv is full */) c n
+(        ) p
+(if) K
+( \(tok->argc >= MAXARGS-1\) ) p
+(break) K
+(;) p n
+() N
+(        buf = next + 1;) N
+(    }) N
+() N
+(    ) S
+(if) K
+( \(parsing_state != ST_NORMAL\) {) p n
+(        \() S
+(void) k
+(\) fprintf\(stderr, ") p
+(Error: must provide file name for redirection\\n) str
+("\);) p n
+(        ) S
+(return) K
+( -1;) p n
+(    }) N
+() N
+(    ) S
+(/* The argument list must end with a NULL pointer */) c n
+(    tok->argv[tok->argc] = ) p
+(NULL) K
+(;) p n
+() N
+(    ) S
+(if) K
+( \(tok->argc == 0\)  ) p
+(/* ignore blank line */) c n
+(        ) p
+(return) K
+( 1;) p n
+() N
+(    ) S
+(if) K
+( \(!strcmp\(tok->argv[0], ") p
+(quit) str
+("\)\) {                 ) p
+(/* quit command */) c n
+(        tok->builtins = BUILTIN_QUIT;) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+( \(!strcmp\(tok->argv[0], ") p
+(jobs) str
+("\)\) {          ) p
+(/* jobs command */) c n
+(        tok->builtins = BUILTIN_JOBS;) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+( \(!strcmp\(tok->argv[0], ") p
+(bg) str
+("\)\) {            ) p
+(/* bg command */) c n
+(        tok->builtins = BUILTIN_BG;) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+( \(!strcmp\(tok->argv[0], ") p
+(fg) str
+("\)\) {            ) p
+(/* fg command */) c n
+(        tok->builtins = BUILTIN_FG;) p n
+(    } ) S
+(else) K
+( {) p n
+(        tok->builtins = BUILTIN_NONE;) N
+(    }) N
+() N
+(    ) S
+(/* Should the job run in the background? */) c n
+(    ) p
+(if) K
+( \(\(is_bg = \(*tok->argv[tok->argc-1] == ') p
+(&) str
+('\)\) != 0\)) p n
+(        tok->argv[--tok->argc] = ) S
+(NULL) K
+(;) p n
+() N
+(    ) S
+(return) K
+( is_bg;) p n
+(}) N
+() N
+() N
+(/*****************) c n
+( * Signal handlers) N
+( *****************/) N
+() p n
+(tsh.c) (Page 10/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (5/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (11-12) 6
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/* ) c n
+( * sigchld_handler - The kernel sends a SIGCHLD to the shell whenever) N
+( *     a child job terminates \(becomes a zombie\), or stops because it) N
+( *     received a SIGSTOP, SIGTSTP, SIGTTIN or SIGTTOU signal. The ) N
+( *     handler reaps all available zombie children, but doesn't wait ) N
+( *     for any other currently running children to terminate.  ) N
+( */) N
+(void) k
+( ) p n
+(sigchld_handler\() S
+(int) k
+( sig\) ) p n
+({) N
+(    pid_t pid;) N
+(    ) S
+(int) k
+( status;) p n
+() N
+(    ) S
+(/* reaps 1 child/iteration */) c n
+(    ) p
+(while) K
+( \(\(pid = waitpid\(-1, &status, WNOHANG | WUNTRACED\)\) > 0\){) p n
+() N
+(        ) S
+(/* child terminated normally */) c n
+(        ) p
+(if) K
+( \(WIFEXITED\(status\)\){) p n
+(            deletejob\(job_list, pid\);) N
+() N
+(        ) S
+(/* child terminated by signal */) c n
+(        } ) p
+(else) K
+( ) p
+(if) K
+( \(WIFSIGNALED\(status\)\){) p n
+() N
+(            printf\(") S
+(Job [%d] \(%d\) terminated by signal %d\\n) str
+(", ) p n
+(                    pid2jid\(pid\), pid, WTERMSIG\(status\)\);) N
+(        ) N
+(            deletejob\(job_list, pid\);) N
+() N
+(        ) S
+(/* child stopped by delivery of signal */) c n
+(        } ) p
+(else) K
+( ) p
+(if) K
+( \(WIFSTOPPED\(status\)\){) p n
+(            ) N
+(            printf\(") S
+(Job [%d] \(%d\) stopped by signal %d\\n) str
+(", ) p n
+(                    pid2jid\(pid\), pid, WSTOPSIG\(status\)\);) N
+() N
+(            getjobpid\(job_list, pid\)->state = ST;) N
+(        }) N
+(    }) N
+() N
+(    ) S
+(return) K
+(;) p n
+(}) N
+() N
+(/* ) c n
+( * sigint_handler - The kernel sends a SIGINT to the shell whenver the) N
+( *    user types ctrl-c at the keyboard.  Catch it and send it along) N
+( *    to the foreground job.  ) N
+( */) N
+(void) k
+( ) p n
+(sigint_handler\() S
+(int) k
+( sig\) ) p n
+({) N
+(    pid_t pid_fg = fgpid\(job_list\);) N
+() N
+(    ) S
+(/* if there's foreground job */) c n
+(    ) p
+(if) K
+( \(pid_fg != 0\){) p n
+(        ) S
+(/* send signal */) c n
+(        kill\(-pid_fg, sig\);) p n
+(    }) N
+() N
+(    ) S
+(return) K
+(;) p n
+(}) N
+() N
+(/*) c n
+( * sigtstp_handler - The kernel sends a SIGTSTP to the shell whenever) N
+( *     the user types ctrl-z at the keyboard. Catch it and suspend the) N
+( *     foreground job by sending it a SIGTSTP.  ) N
+( */) N
+(void) k
+( ) p n
+(sigtstp_handler\() S
+(int) k
+( sig\) ) p n
+({) N
+(    pid_t pid_fg = fgpid\(job_list\);) N
+(tsh.c) (Page 11/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    ) S
+(/* if there's foreground job */) c n
+(    ) p
+(if) K
+( \(pid_fg != 0\){) p n
+(        ) S
+(/* send signal */) c n
+(        kill\(-pid_fg, sig\);) p n
+(    }) N
+( ) N
+(    ) S
+(return) K
+(;) p n
+(}) N
+() N
+(/*********************) c n
+( * End signal handlers) N
+( *********************/) N
+() p n
+(/***********************************************) c n
+( * Helper routines that manipulate the job list) N
+( **********************************************/) N
+() p n
+(/* clearjob - Clear the entries in a job struct */) c n
+(void) k
+( ) p n
+(clearjob\() S
+(struct) k
+( job_t *job\) {) p n
+(    job->pid = 0;) N
+(    job->jid = 0;) N
+(    job->state = UNDEF;) N
+(    job->cmdline[0] = ') S
+(\\0) str
+(';) p n
+(}) N
+() N
+(/* initjobs - Initialize the job list */) c n
+(void) k
+( ) p n
+(initjobs\() S
+(struct) k
+( job_t *job_list\) {) p n
+(    ) S
+(int) k
+( i;) p n
+() N
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\)) p n
+(        clearjob\(&job_list[i]\);) N
+(}) N
+() N
+(/* maxjid - Returns largest allocated job ID */) c n
+(int) k
+( ) p n
+(maxjid\() S
+(struct) k
+( job_t *job_list\) ) p n
+({) N
+(    ) S
+(int) k
+( i, max=0;) p n
+() N
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\)) p n
+(        ) S
+(if) K
+( \(job_list[i].jid > max\)) p n
+(            max = job_list[i].jid;) N
+(    ) S
+(return) K
+( max;) p n
+(}) N
+() N
+(/* addjob - Add a job to the job list */) c n
+(int) k
+( ) p n
+(addjob\() S
+(struct) k
+( job_t *job_list, pid_t pid, ) p
+(int) k
+( state, ) p
+(char) k
+( *cmdline\) ) p n
+({) N
+(    ) S
+(int) k
+( i;) p n
+(    ) N
+(    ) S
+(if) K
+( \(pid < 1\)) p n
+(        ) S
+(return) K
+( 0;) p n
+() N
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\) {) p n
+(        ) S
+(if) K
+( \(job_list[i].pid == 0\) {) p n
+(            job_list[i].pid = pid;) N
+(            job_list[i].state = state;) N
+(            job_list[i].jid = nextjid++;) N
+(            ) S
+(if) K
+( \(nextjid > MAXJOBS\)) p n
+(                nextjid = 1;) N
+(            strcpy\(job_list[i].cmdline, cmdline\);) N
+(            ) S
+(if) K
+(\(verbose\){) p n
+(                printf\(") S
+(Added job [%d] %d %s\\n) str
+(", job_list[i].jid, job_list[i].pid, j) p n
+(ob_list[i].cmdline\);) N
+(            }) N
+(tsh.c) (Page 12/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (6/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (13-14) 7
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(            ) p
+(return) K
+( 1;) p n
+(        }) N
+(    }) N
+(    printf\(") S
+(Tried to create too many jobs\\n) str
+("\);) p n
+(    ) S
+(return) K
+( 0;) p n
+(}) N
+() N
+(/* deletejob - Delete a job whose PID=pid from the job list */) c n
+(int) k
+( ) p n
+(deletejob\() S
+(struct) k
+( job_t *job_list, pid_t pid\) ) p n
+({) N
+(    ) S
+(int) k
+( i;) p n
+() N
+(    ) S
+(if) K
+( \(pid < 1\)) p n
+(        ) S
+(return) K
+( 0;) p n
+() N
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\) {) p n
+(        ) S
+(if) K
+( \(job_list[i].pid == pid\) {) p n
+(            clearjob\(&job_list[i]\);) N
+(            nextjid = maxjid\(job_list\)+1;) N
+(            ) S
+(return) K
+( 1;) p n
+(        }) N
+(    }) N
+(    ) S
+(return) K
+( 0;) p n
+(}) N
+() N
+(/* fgpid - Return PID of current foreground job, 0 if no such job */) c n
+(pid_t ) p n
+(fgpid\() S
+(struct) k
+( job_t *job_list\) {) p n
+(    ) S
+(int) k
+( i;) p n
+() N
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\)) p n
+(        ) S
+(if) K
+( \(job_list[i].state == FG\)) p n
+(            ) S
+(return) K
+( job_list[i].pid;) p n
+(    ) S
+(return) K
+( 0;) p n
+(}) N
+() N
+(/* getjobpid  - Find a job \(by PID\) on the job list */) c n
+(struct) k
+( job_t ) p n
+(*getjobpid\() S
+(struct) k
+( job_t *job_list, pid_t pid\) {) p n
+(    ) S
+(int) k
+( i;) p n
+() N
+(    ) S
+(if) K
+( \(pid < 1\)) p n
+(        ) S
+(return) K
+( ) p
+(NULL) K
+(;) p n
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\)) p n
+(        ) S
+(if) K
+( \(job_list[i].pid == pid\)) p n
+(            ) S
+(return) K
+( &job_list[i];) p n
+(    ) S
+(return) K
+( ) p
+(NULL) K
+(;) p n
+(}) N
+() N
+(/* getjobjid  - Find a job \(by JID\) on the job list */) c n
+(struct) k
+( job_t *getjobjid\() p
+(struct) k
+( job_t *job_list, ) p
+(int) k
+( jid\) ) p n
+({) N
+(    ) S
+(int) k
+( i;) p n
+() N
+(    ) S
+(if) K
+( \(jid < 1\)) p n
+(        ) S
+(return) K
+( ) p
+(NULL) K
+(;) p n
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\)) p n
+(        ) S
+(if) K
+( \(job_list[i].jid == jid\)) p n
+(            ) S
+(return) K
+( &job_list[i];) p n
+(    ) S
+(return) K
+( ) p
+(NULL) K
+(;) p n
+(}) N
+() N
+(/* pid2jid - Map process ID to job ID */) c n
+(int) k
+( ) p n
+(pid2jid\(pid_t pid\) ) N
+({) N
+(    ) S
+(int) k
+( i;) p n
+() N
+(tsh.c) (Page 13/15) (Mar 24, 10 16:43) title
+border
+/v 1 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    ) p
+(if) K
+( \(pid < 1\)) p n
+(        ) S
+(return) K
+( 0;) p n
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\)) p n
+(        ) S
+(if) K
+( \(job_list[i].pid == pid\) {) p n
+(            ) S
+(return) K
+( job_list[i].jid;) p n
+(        }) N
+(    ) S
+(return) K
+( 0;) p n
+(}) N
+() N
+(/* listjobs - Print the job list */) c n
+(void) k
+( ) p n
+(listjobs\() S
+(struct) k
+( job_t *job_list, ) p
+(int) k
+( output_fd\) ) p n
+({) N
+(    ) S
+(int) k
+( i;) p n
+(    ) S
+(char) k
+( buf[MAXLINE];) p n
+() N
+(    ) S
+(for) K
+( \(i = 0; i < MAXJOBS; i++\) {) p n
+(        memset\(buf, ') S
+(\\0) str
+(', MAXLINE\);) p n
+(        ) S
+(if) K
+( \(job_list[i].pid != 0\) {) p n
+(            sprintf\(buf, ") S
+([%d] \(%d\) ) str
+(", job_list[i].jid, job_list[i].pid\);) p n
+(            ) S
+(if) K
+(\(write\(output_fd, buf, strlen\(buf\)\) < 0\) {) p n
+(                fprintf\(stderr, ") S
+(Error writing to output file\\n) str
+("\);) p n
+(                exit\(1\);) N
+(            }) N
+(            memset\(buf, ') S
+(\\0) str
+(', MAXLINE\);) p n
+(            ) S
+(switch) K
+( \(job_list[i].state\) {) p n
+(            ) S
+(case) K
+( BG:) p n
+(                sprintf\(buf, ") S
+(Running    ) str
+("\);) p n
+(                ) S
+(break) K
+(;) p n
+(            ) S
+(case) K
+( FG:) p n
+(                sprintf\(buf, ") S
+(Foreground ) str
+("\);) p n
+(                ) S
+(break) K
+(;) p n
+(            ) S
+(case) K
+( ST:) p n
+(                sprintf\(buf, ") S
+(Stopped    ) str
+("\);) p n
+(                ) S
+(break) K
+(;) p n
+(            ) S
+(default) K
+(:) p n
+(                sprintf\(buf, ") S
+(listjobs: Internal error: job[%d].state=%d ) str
+(",) p n
+(                        i, job_list[i].state\);) N
+(            }) N
+(            ) S
+(if) K
+(\(write\(output_fd, buf, strlen\(buf\)\) < 0\) {) p n
+(                fprintf\(stderr, ") S
+(Error writing to output file\\n) str
+("\);) p n
+(                exit\(1\);) N
+(            }) N
+(            memset\(buf, ') S
+(\\0) str
+(', MAXLINE\);) p n
+(            sprintf\(buf, ") S
+(%s\\n) str
+(", job_list[i].cmdline\);) p n
+(            ) S
+(if) K
+(\(write\(output_fd, buf, strlen\(buf\)\) < 0\) {) p n
+(                fprintf\(stderr, ") S
+(Error writing to output file\\n) str
+("\);) p n
+(                exit\(1\);) N
+(            }) N
+(        }) N
+(    }) N
+(    ) S
+(if) K
+(\(output_fd != STDOUT_FILENO\)) p n
+(        close\(output_fd\);) N
+(}) N
+(/******************************) c n
+( * end job list helper routines) N
+( ******************************/) N
+() p n
+() N
+(/***********************) c n
+( * Other helper routines) N
+( ***********************/) N
+() p n
+(/*) c n
+( * usage - print a help message) N
+( */) N
+(void) k
+( ) p n
+(usage\() S
+(void) k
+(\) ) p n
+({) N
+(tsh.c) (Page 14/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (7/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (15) 8
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.147420 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    printf\(") p
+(Usage: shell [-hvp]\\n) str
+("\);) p n
+(    printf\(") S
+(   -h   print this message\\n) str
+("\);) p n
+(    printf\(") S
+(   -v   print additional diagnostic information\\n) str
+("\);) p n
+(    printf\(") S
+(   -p   do not emit a command prompt\\n) str
+("\);) p n
+(    exit\(1\);) N
+(}) N
+() N
+(/*) c n
+( * unix_error - unix-style error routine) N
+( */) N
+(void) k
+( ) p n
+(unix_error\() S
+(char) k
+( *msg\)) p n
+({) N
+(    fprintf\(stdout, ") S
+(%s: %s\\n) str
+(", msg, strerror\(errno\)\);) p n
+(    exit\(1\);) N
+(}) N
+() N
+(/*) c n
+( * app_error - application-style error routine) N
+( */) N
+(void) k
+( ) p n
+(app_error\() S
+(char) k
+( *msg\)) p n
+({) N
+(    fprintf\(stdout, ") S
+(%s\\n) str
+(", msg\);) p n
+(    exit\(1\);) N
+(}) N
+() N
+(/*) c n
+( * Signal - wrapper for the sigaction function) N
+( */) N
+(handler_t ) p n
+(*Signal\() S
+(int) k
+( signum, handler_t *handler\) ) p n
+({) N
+(    ) S
+(struct) k
+( sigaction action, old_action;) p n
+() N
+(    action.sa_handler = handler;  ) N
+(    sigemptyset\(&action.sa_mask\); ) S
+(/* block sigs of type being handled */) c n
+(    action.sa_flags = SA_RESTART; ) p
+(/* restart syscalls if possible */) c n
+() p n
+(    ) S
+(if) K
+( \(sigaction\(signum, &action, &old_action\) < 0\)) p n
+(        unix_error\(") S
+(Signal error) str
+("\);) p n
+(    ) S
+(return) K
+( \(old_action.sa_handler\);) p n
+(}) N
+() N
+(/*) c n
+( * sigquit_handler - The driver program can gracefully terminate the) N
+( *    child shell by sending it a SIGQUIT signal.) N
+( */) N
+(void) k
+( ) p n
+(sigquit_handler\() S
+(int) k
+( sig\) ) p n
+({) N
+(    printf\(") S
+(Terminating after receipt of SIGQUIT signal\\n) str
+("\);) p n
+(    exit\(1\);) N
+(}) N
+() N
+(tsh.c) (Page 15/15) (Mar 24, 10 16:43) title
+border
+grestore
+(Printed by Hang Zheng) rhead
+(tsh.c) (8/8) (Wednesday March 24, 2010) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF
